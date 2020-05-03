@@ -59,6 +59,10 @@ class MoneyLoverClient {
     return this._postRequest('/wallet/list')
   }
 
+  getEvents () {
+    return this._postRequest('/event/list/all')
+  }
+
   getWalletNames () {
     return cached('wallets', () => {
       return this._postRequest('/wallet/list')

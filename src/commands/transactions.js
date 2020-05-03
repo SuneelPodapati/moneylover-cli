@@ -23,6 +23,16 @@ module.exports.builder = (yargs) => yargs
     describe: 'Only show expense transactions',
     type: 'bool'
   })
+  .option('total', {
+    describe: 'display sum of amount',
+    type: 'bool',
+    alias: 't'
+  })
+  .option('eventFilter', {
+    describe: 'filter by events name',
+    type: 'array',
+    alias: 'ef'
+  })
 
 module.exports.handler = async (argv) => {
   const chrono = require('chrono-node')
@@ -53,19 +63,35 @@ module.exports.handler = async (argv) => {
     transactions = transactions.transactions;
   }
 
+  if(argv.eventFilter){
+    transactions = transactions.filter(
+      t => t.campaign.filter(x => x.type === 6).map(x => x.name).find(c => argv.eventFilter.includes(c))
+    )
+  }
+
   const table = new Table({
-    chars: {'mid': '', 'left-mid': '', 'mid-mid': '', 'right-mid': ''},
-    head: ['Date', 'Wallet', 'Note', 'Type', 'Category', 'Amount']
+    //chars: {'mid': '', 'left-mid': '', 'mid-mid': '', 'right-mid': ''},
+    head: ['Date', 'Wallet', 'Note', 'Type', 'Category', 'Event', 'Amount']
   })
-  for (const t of transactions) {
+  for (let t of transactions) {
+    t['sumAmount'] = t.category.type === MoneyLover.CATEGORY_TYPE_INCOME ? t.amount : (t.amount * -1)
     table.push([
       new Date(t.displayDate).toDateString(),
       t.account.name,
       t.note,
       t.category.type === MoneyLover.CATEGORY_TYPE_INCOME ? 'Income' : 'Expense',
       t.category.name,
+      t.campaign.filter(x => x.type === 6).map(x => x.name)[0],
       Math.floor(t.amount * 100) / 100
     ])
   }
+
+  if(argv.total){
+    table.push([
+      { colSpan: 6, content: 'Sum Amount', hAlign: 'right' },
+      Math.floor(transactions.reduce(((s,t) => s+t['sumAmount']), 0) * 100) / 100
+    ])
+  }
+
   console.log(table.toString())
 }
