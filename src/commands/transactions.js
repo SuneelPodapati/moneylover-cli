@@ -92,7 +92,7 @@ module.exports.handler = async (argv) => {
     let total = Math.floor(transactions.reduce(((s,t) => s+t['sumAmount']), 0) * 100) / 100
     table.push([
       { colSpan: 6, content: 'Sum Amount', hAlign: 'right' },
-      color(total)(total)
+      color(total)(Math.abs(total))
     ])
   }
 
