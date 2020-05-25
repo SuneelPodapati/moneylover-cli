@@ -40,7 +40,7 @@ module.exports.handler = async (argv) => {
   const colors = require('chalk')
   const { getMoneyLover } = require('../util')
   const MoneyLover = require('../moneylover')
-  let color = (category) => category.type === MoneyLover.CATEGORY_TYPE_INCOME ? colors['blue'] : colors['red']
+  let color = (value) => value > 0 ? colors['blue'] : colors['red']
 
   const ml = await getMoneyLover()
   const wallets = await ml.getWalletNames()
@@ -84,14 +84,15 @@ module.exports.handler = async (argv) => {
       t.category.type === MoneyLover.CATEGORY_TYPE_INCOME ? 'Income' : 'Expense',
       t.category.name, 
       t.campaign.filter(x => x.type === 6).map(x => x.name)[0],
-      color(t.category)(Math.floor(t.amount * 100) / 100)
+      color(t['sumAmount'])(Math.floor(t.amount * 100) / 100)
     ])
   }
 
   if(argv.total){
+    let total = Math.floor(transactions.reduce(((s,t) => s+t['sumAmount']), 0) * 100) / 100
     table.push([
       { colSpan: 6, content: 'Sum Amount', hAlign: 'right' },
-      Math.floor(transactions.reduce(((s,t) => s+t['sumAmount']), 0) * 100) / 100
+      color(total)(total)
     ])
   }
 
