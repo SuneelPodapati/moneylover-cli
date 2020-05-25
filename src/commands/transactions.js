@@ -37,6 +37,7 @@ module.exports.builder = (yargs) => yargs
 module.exports.handler = async (argv) => {
   const chrono = require('chrono-node')
   const Table = require('cli-table3')
+  const colors = require('chalk')
   const { getMoneyLover } = require('../util')
   const MoneyLover = require('../moneylover')
 
@@ -80,7 +81,7 @@ module.exports.handler = async (argv) => {
       t.account.name,
       t.note,
       t.category.type === MoneyLover.CATEGORY_TYPE_INCOME ? 'Income' : 'Expense',
-      t.category.name,
+      colors['red'](t.category.name), 
       t.campaign.filter(x => x.type === 6).map(x => x.name)[0],
       Math.floor(t.amount * 100) / 100
     ])
